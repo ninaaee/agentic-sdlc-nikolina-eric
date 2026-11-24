@@ -1,0 +1,33 @@
+@startuml sequence-malformed-input
+
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Sequence.puml
+
+title Bank OCR - Sequence Diagram: Malformed Input
+
+Person(operator, "Bank Operator", "Submits account records and reviews processing results")
+
+Container_Boundary(cli, "Bank OCR CLI")
+  Component(orchestrator, "CLI Orchestrator", "Python 3.12", "Entry point that wires and drives the five modules (no domain logic)")
+  Component(parser, "Input Parser", "Python module", "Reads the input file and splits it into account records")
+  Component(recognizer, "Digit Recognizer", "Python module", "Maps each 3x3 glyph to a digit, or ? if no match")
+  Component(validator, "Account Validator", "Python module", "Applies the mod-11 checksum and classifies the record")
+  Component(reporter, "Report Generator", "Python module", "Formats the final result line per record")
+Boundary_End()
+
+Rel(operator, orchestrator, "runs CLI with input file", "CLI")
+Rel(orchestrator, parser, "reads and splits records", "function call")
+Rel(parser, orchestrator, "returns structural error marker for short line", "return value")
+Rel(orchestrator, operator, "reports input-format error", "stderr")
+
+Note over orchestrator, parser: Structural errors are not ILL/ERR kata outcomes; the run continues
+
+Rel(orchestrator, parser, "continues with next entry", "function call")
+Rel(parser, orchestrator, "returns nine glyph cells for next record", "return value")
+Rel(orchestrator, recognizer, "recognizes nine glyphs", "function call")
+Rel(recognizer, orchestrator, "returns 457508000", "return value")
+Rel(orchestrator, validator, "validates checksum and classifies", "function call")
+Rel(validator, orchestrator, "returns valid", "return value")
+Rel(orchestrator, reporter, "writes result line", "function call")
+Rel(reporter, operator, "prints 457508000", "stdout")
+
+@enduml
