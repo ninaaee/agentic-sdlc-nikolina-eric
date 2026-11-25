@@ -1,0 +1,40 @@
+@startuml sequence-correction
+
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Sequence.puml
+
+title Bank OCR - Sequence Diagram: Single-Segment Correction
+
+Person(operator, "Bank Operator", "Submits account records and reviews processing results")
+
+Container_Boundary(cli, "Bank OCR CLI")
+  Component(orchestrator, "CLI Orchestrator", "Python 3.12", "Entry point that wires and drives the five modules (no domain logic)")
+  Component(parser, "Input Parser", "Python module", "Reads the input file and splits it into account records")
+  Component(recognizer, "Digit Recognizer", "Python module", "Maps each 3x3 glyph to a digit, or ? if no match")
+  Component(validator, "Account Validator", "Python module", "Applies the mod-11 checksum and classifies the record")
+  Component(corrector, "Error Corrector", "Python module", "Repairs ERR/ILL records by single-segment changes")
+  Component(reporter, "Report Generator", "Python module", "Formats the final result line per record")
+Boundary_End()
+
+Rel(operator, orchestrator, "runs CLI with input file", "CLI")
+Rel(orchestrator, parser, "reads and splits records", "function call")
+Rel(parser, orchestrator, "returns nine glyph cells per record", "return value")
+Rel(orchestrator, recognizer, "recognizes nine glyphs", "function call")
+Rel(recognizer, orchestrator, "returns account number containing ?", "return value")
+Rel(orchestrator, validator, "validates and classifies", "function call")
+Rel(validator, orchestrator, "returns ILL (illegibility takes precedence)", "return value")
+Rel(orchestrator, corrector, "corrects initial ILL or ERR record", "function call")
+
+loop each candidate single-segment change to one glyph
+  Rel(corrector, recognizer, "re-recognizes modified glyph", "function call")
+  Rel(recognizer, corrector, "returns candidate digit or ?", "return value")
+  Rel(corrector, validator, "validates candidate checksum", "function call")
+  Rel(validator, corrector, "returns valid or invalid", "return value")
+end
+
+Note over corrector: Keep only valid candidates; exactly one wins
+
+Rel(corrector, orchestrator, "returns corrected account number", "return value")
+Rel(orchestrator, reporter, "writes result line", "function call")
+Rel(reporter, operator, "prints corrected number with no suffix", "stdout")
+
+@enduml

@@ -1,0 +1,16 @@
+@startuml c4-context
+
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+
+title Bank OCR - System Context
+
+Person(operator, "Bank Operator", "Submits account records and reviews processing results")
+
+System(bankocr, "Bank OCR System", "Recognizes nine-digit account numbers, validates checksums and corrects possible recognition errors")
+
+System_Ext(scanner, "Existing Scanning System", "Produces ASCII-formatted account records from scanned documents")
+
+Rel(operator, bankocr, "Processes records and reviews results", "CLI")
+Rel(scanner, bankocr, "Provides account records", "ASCII text files")
+
+@enduml

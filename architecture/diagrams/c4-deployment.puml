@@ -1,0 +1,22 @@
+@startuml c4-deployment
+
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Deployment.puml
+
+title Bank OCR - Deployment View
+
+Person(operator, "Bank Operator", "Runs the CLI and reviews processing results")
+
+Deployment_Node(workstation, "Developer Workstation", "Linux, POSIX shell, Python 3.12", "Local execution environment; no server, container or cloud infrastructure") {
+  Container(cli, "Bank OCR CLI", "Python 3.12", "Single deployable unit: parses, recognizes, validates, corrects and reports account numbers")
+}
+
+Deployment_Node(scanner_env, "Existing Scanning System Environment", "External environment", "Outside the Bank OCR deployment; not built, deployed or modified by this project") {
+  System_Ext(scanner, "Existing Scanning System", "Produces ASCII-formatted account records from scanned documents")
+}
+
+Rel(operator, cli, "invokes with input file path", "CLI")
+Rel(scanner, cli, "provides account records", "ASCII text file")
+Rel(cli, operator, "prints result lines", "stdout")
+Rel(cli, operator, "reports input-format errors", "stderr")
+
+@enduml

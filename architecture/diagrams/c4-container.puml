@@ -1,0 +1,18 @@
+@startuml c4-container
+
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+title Bank OCR - Container View
+
+Person(operator, "Bank Operator", "Submits account records and reviews processing results")
+
+System_Boundary(b, "Bank OCR") {
+  Container(cli, "Bank OCR CLI", "Python 3.12", "Parses, recognizes, validates, corrects and reports account numbers")
+}
+
+System_Ext(scanner, "Existing Scanning System", "Produces ASCII-formatted account records from scanned documents")
+
+Rel(scanner, cli, "Provides account records", "ASCII text files")
+Rel(operator, cli, "Processes records and reviews results", "CLI")
+
+@enduml
